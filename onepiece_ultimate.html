@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONE PIECE — 海賊王への道 | The Grand Adventure Encyclopedia</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #FFD700;
+  --gold2: #E6B800;
+  --gold3: #C8960C;
+  --red: #C0392B;
+  --deepred: #8B0000;
+  --navy: #060A14;
+  --ocean: #0A1628;
+  --teal: #00B4D8;
+  --cream: #F5ECD7;
+  --smoke: #C9B99A;
+  --ink: #1a0a00;
+  --washi: #F2E8D5;
+  --indigo: #1B2A4A;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:var(--cream);font-family:'Crimson Pro',serif;overflow-x:hidden;cursor:none}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:28px;height:28px;border:2px solid var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .12s,background .2s,border-color .2s;mix-blend-mode:exclusion}
+#curdot{position:fixed;width:6px;height:6px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:10000;transform:translate(-50%,-50%)}
+body:hover #cur{opacity:1}
+
+/* ── PROGRESS ── */
+#prog{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--deepred),var(--gold),var(--teal));z-index:300;transition:width .08s linear}
+
+/* ── CANVAS OCEAN ── */
+#oceanCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── PAPER TEXTURE OVERLAY ── */
+.paper-texture{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:300px}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:1rem 3rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(6,10,20,.95) 0%,transparent 100%)}
+.nav-logo{font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--gold);letter-spacing:.15em;text-shadow:0 0 20px rgba(255,215,0,.5)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--smoke);text-decoration:none;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;transition:color .3s}
+.nav-links a:hover{color:var(--gold)}
+
+/* ── SECTION UTILITY ── */
+.z1{position:relative;z-index:1}
+.sec-label{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.6em;text-transform:uppercase;margin-bottom:.8rem;display:block}
+.sec-title{font-family:'Cinzel Decorative',serif;line-height:1.05;text-shadow:0 0 30px rgba(255,215,0,.3)}
+.jp{font-family:'Noto Serif JP',serif}
+
+/* ── REVEAL ── */
+.rev{opacity:0;transform:translateY(40px);transition:opacity .8s ease,transform .8s ease}
+.rev.on{opacity:1;transform:translateY(0)}
+.rev-l{opacity:0;transform:translateX(-50px);transition:opacity .8s ease,transform .8s ease}
+.rev-l.on{opacity:1;transform:translateX(0)}
+.rev-r{opacity:0;transform:translateX(50px);transition:opacity .8s ease,transform .8s ease}
+.rev-r.on{opacity:1;transform:translateX(0)}
+
+/* ════════════════════ HERO ════════════════════ */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;overflow:hidden}
+.hero-ship-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,rgba(192,57,43,.12) 0%,transparent 60%),radial-gradient(ellipse at 30% 40%,rgba(0,180,216,.06) 0%,transparent 50%)}
+.hero-eyebrow{font-family:'Noto Serif JP',serif;font-size:.85rem;letter-spacing:.4em;color:var(--teal);margin-bottom:1.5rem;opacity:0;animation:fadeUp 1s ease forwards .3s}
+.hero-title{font-family:'Cinzel Decorative',serif;font-size:clamp(4rem,13vw,10rem);line-height:.85;color:var(--gold);text-shadow:0 0 40px rgba(255,215,0,.4),0 0 80px rgba(255,215,0,.15),5px 5px 0 var(--gold3),10px 10px 0 rgba(0,0,0,.4);letter-spacing:.05em;opacity:0;animation:heroReveal 1.5s cubic-bezier(.16,1,.3,1) forwards .6s}
+.hero-jp{font-family:'Noto Serif JP',serif;font-size:clamp(.9rem,2vw,1.4rem);color:var(--smoke);margin-top:1rem;letter-spacing:.5em;opacity:0;animation:fadeUp 1s ease forwards 1.3s}
+.hero-desc{font-style:italic;font-size:clamp(1rem,2vw,1.4rem);color:var(--cream);margin-top:2rem;max-width:650px;line-height:1.8;opacity:0;animation:fadeUp 1s ease forwards 1.6s}
+.hero-desc em{color:var(--gold);font-style:normal}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0;animation:fadeUp 1s ease forwards 2.2s}
+.scroll-hint span{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.5em;color:var(--smoke);text-transform:uppercase}
+.scroll-line{width:1px;height:55px;background:linear-gradient(180deg,var(--gold) 0%,transparent 100%);animation:scrollPulse 2s ease-in-out infinite}
+@keyframes heroReveal{0%{opacity:0;transform:translateY(60px) scale(.9);filter:blur(20px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(25px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes scrollPulse{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ── HERO IMAGES STRIP ── */
+.hero-img-strip{display:flex;gap:1rem;margin-top:3rem;opacity:0;animation:fadeUp 1s ease forwards 2s}
+.hero-img-strip img{width:70px;height:70px;object-fit:cover;border-radius:50%;border:2px solid rgba(255,215,0,.4);filter:grayscale(20%);transition:all .3s}
+.hero-img-strip img:hover{border-color:var(--gold);transform:scale(1.1);filter:grayscale(0%)}
+
+/* ── MARQUEE ── */
+.marquee-wrap{overflow:hidden;border-top:1px solid rgba(255,215,0,.12);border-bottom:1px solid rgba(255,215,0,.12);background:rgba(255,215,0,.02);padding:.8rem 0;position:relative;z-index:1}
+.marquee-inner{display:flex;gap:2.5rem;animation:mq 30s linear infinite;white-space:nowrap}
+.marquee-inner span{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.4em;color:rgba(255,215,0,.35);text-transform:uppercase}
+.marquee-inner .dot{color:var(--gold);opacity:.6;letter-spacing:0}
+@keyframes mq{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ════════════════════ MEANING SECTION ════════════════════ */
+.meaning-sec{padding:9rem 4rem;position:relative;overflow:hidden}
+.meaning-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(192,57,43,.1) 0%,transparent 55%)}
+.meaning-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.meaning-text{font-size:1.1rem;line-height:2;color:var(--smoke);margin-bottom:1.5rem}
+.meaning-text strong{color:var(--gold)}
+.meaning-img-wrap{position:relative}
+.meaning-img-wrap img{width:100%;border-radius:4px;border:1px solid rgba(255,215,0,.2);filter:brightness(.9) contrast(1.1)}
+.meaning-img-wrap::after{content:'LAUGH TALE';position:absolute;bottom:-1px;left:0;right:0;background:linear-gradient(0deg,rgba(6,10,20,.95),transparent);padding:2rem 1.5rem .5rem;font-family:'Cinzel Decorative',serif;font-size:.7rem;letter-spacing:.4em;color:var(--gold);opacity:.6;text-align:center}
+
+/* ════════════════════ BOUNTY POSTERS ════════════════════ */
+.bounty-sec{padding:8rem 3rem;background:linear-gradient(180deg,transparent 0%,rgba(10,22,40,.5) 50%,transparent 100%)}
+.bounty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.5rem;max-width:1400px;margin:3rem auto 0}
+.bounty-poster{position:relative;cursor:pointer;transition:transform .4s cubic-bezier(.16,1,.3,1)}
+.bounty-poster:hover{transform:translateY(-12px) rotate(-1deg)}
+.bounty-inner{background:var(--washi);border:3px solid #8B6914;border-radius:2px;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,.5),8px 8px 20px rgba(0,0,0,.5);position:relative}
+.bounty-inner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");pointer-events:none;z-index:5;mix-blend-mode:multiply}
+.bounty-header{background:#8B1A1A;padding:.4rem;text-align:center;border-bottom:2px solid #FFD700}
+.bounty-header span{font-family:'Cinzel Decorative',serif;font-size:.6rem;color:var(--gold);letter-spacing:.3em}
+.bounty-img{width:100%;height:200px;object-fit:cover;object-position:top;display:block;filter:sepia(20%) contrast(1.05)}
+.bounty-name-bar{background:#1a0a00;padding:.4rem .6rem;text-align:center;border-top:2px solid #8B6914;border-bottom:1px solid #8B6914}
+.bounty-name-bar .char-n{font-family:'Cinzel Decorative',serif;font-size:.75rem;color:var(--gold);letter-spacing:.1em;display:block;line-height:1.2}
+.bounty-name-bar .char-n-jp{font-family:'Noto Serif JP',serif;font-size:.55rem;color:var(--smoke);opacity:.7;display:block;margin-top:.1rem}
+.bounty-amount{background:var(--washi);padding:.5rem;text-align:center}
+.bounty-label{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.3em;color:#8B4513;display:block;margin-bottom:.1rem}
+.bounty-value{font-family:'Cinzel Decorative',serif;font-size:1rem;color:#8B1A1A;line-height:1;letter-spacing:.03em}
+.bounty-value small{font-size:.55rem;display:block;color:#654321;letter-spacing:.1em;margin-top:.1rem}
+.bounty-stamp{position:absolute;top:50%;right:5px;transform:translateY(-50%) rotate(15deg);font-family:'Cinzel Decorative',serif;font-size:.55rem;color:rgba(139,26,26,.6);border:2px solid rgba(139,26,26,.4);padding:.1rem .3rem;letter-spacing:.1em;border-radius:2px;z-index:6;background:rgba(242,232,213,.3)}
+.age-tag{position:absolute;top:8px;left:8px;background:rgba(139,26,26,.85);color:var(--gold);font-family:'Cinzel',serif;font-size:.5rem;padding:.15rem .4rem;letter-spacing:.15em;border:1px solid rgba(255,215,0,.4);z-index:6}
+
+/* ════════════════════ CHARACTER BRANCH LINE ════════════════════ */
+.branch-sec{padding:8rem 2rem;overflow:hidden}
+.branch-container{max-width:1400px;margin:3rem auto 0;overflow-x:auto;padding-bottom:2rem;scrollbar-width:thin;scrollbar-color:rgba(255,215,0,.3) transparent}
+.branch-container::-webkit-scrollbar{height:4px}
+.branch-container::-webkit-scrollbar-track{background:rgba(255,215,0,.05)}
+.branch-container::-webkit-scrollbar-thumb{background:rgba(255,215,0,.3);border-radius:2px}
+
+.branch-canvas-wrap{position:relative;min-width:1300px}
+#branchSvg{width:100%;height:520px}
+
+.branch-node{position:absolute;transform:translate(-50%,-50%);text-align:center;cursor:pointer;z-index:10;transition:transform .3s}
+.branch-node:hover{transform:translate(-50%,-50%) scale(1.1)}
+.branch-node-img{width:60px;height:60px;border-radius:50%;border:3px solid var(--node-color,var(--gold));object-fit:cover;object-position:top;display:block;margin:0 auto;box-shadow:0 0 15px rgba(255,215,0,.3),0 4px 12px rgba(0,0,0,.6);filter:brightness(1.05)}
+.branch-node-name{font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold);letter-spacing:.1em;margin-top:.3rem;white-space:nowrap}
+.branch-node-role{font-family:'Noto Serif JP',serif;font-size:.45rem;color:var(--smoke);opacity:.7;margin-top:.1rem;white-space:nowrap}
+
+/* ════════════════════ ARCS ════════════════════ */
+.arcs-sec{padding:8rem 3rem}
+.arc-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;max-width:1400px;margin:3rem auto 0}
+.arc-card{position:relative;overflow:hidden;border-radius:3px;cursor:pointer;transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s}
+.arc-card:hover{transform:translateY(-8px) scale(1.01);box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.arc-card-img{width:100%;height:200px;object-fit:cover;display:block;transition:transform .5s ease,filter .5s ease}
+.arc-card:hover .arc-card-img{transform:scale(1.06);filter:brightness(.7)}
+.arc-card-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(6,10,20,.98) 0%,rgba(6,10,20,.4) 50%,transparent 80%)}
+.arc-card-body{position:absolute;bottom:0;left:0;right:0;padding:1.5rem}
+.arc-num{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.4em;color:var(--teal);margin-bottom:.3rem}
+.arc-name{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--gold);line-height:1.1;margin-bottom:.5rem}
+.arc-tag{display:inline-block;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.2em;padding:.15rem .5rem;border-radius:1px;margin-bottom:.6rem;color:#000}
+.arc-desc{font-size:.85rem;line-height:1.6;color:var(--smoke);max-height:0;overflow:hidden;transition:max-height .5s ease,opacity .5s ease;opacity:0}
+.arc-card:hover .arc-desc{max-height:80px;opacity:1}
+
+/* ════════════════════ DEVIL FRUITS ════════════════════ */
+.fruits-sec{padding:8rem 3rem;background:linear-gradient(180deg,transparent 0%,rgba(139,0,0,.06) 50%,transparent 100%)}
+.fruit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1.2rem;max-width:1300px;margin:3rem auto 0}
+.fruit-card{background:linear-gradient(135deg,rgba(10,22,40,.8),rgba(6,10,20,.9));border:1px solid rgba(255,215,0,.1);border-radius:3px;overflow:hidden;transition:all .4s cubic-bezier(.16,1,.3,1);cursor:pointer}
+.fruit-card:hover{border-color:rgba(255,215,0,.4);transform:translateY(-8px) rotate(-.5deg);box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.fruit-img{width:100%;height:130px;object-fit:cover;display:block;filter:saturate(1.2) brightness(.95);transition:filter .4s}
+.fruit-card:hover .fruit-img{filter:saturate(1.5) brightness(1.05)}
+.fruit-body{padding:1rem}
+.fruit-name{font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);letter-spacing:.05em;margin-bottom:.2rem}
+.fruit-type-badge{display:inline-block;font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.2em;padding:.1rem .4rem;border-radius:1px;margin-bottom:.5rem}
+.fruit-type-badge.logia{background:rgba(0,180,216,.2);color:var(--teal);border:1px solid rgba(0,180,216,.3)}
+.fruit-type-badge.paramecia{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.2)}
+.fruit-type-badge.zoan{background:rgba(46,204,113,.1);color:#2ECC71;border:1px solid rgba(46,204,113,.2)}
+.fruit-user{font-size:.8rem;color:var(--smoke);line-height:1.5}
+
+/* ════════════════════ WILL OF D ════════════════════ */
+.will-sec{padding:10rem 3rem;text-align:center;position:relative;overflow:hidden}
+.will-sec::before{content:'D';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cinzel Decorative',serif;font-size:40vw;color:rgba(255,215,0,.02);pointer-events:none;line-height:1;animation:dPulse 8s ease-in-out infinite}
+@keyframes dPulse{0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)}50%{opacity:.4;transform:translate(-50%,-50%) scale(1.04)}}
+.will-content{max-width:850px;margin:0 auto;position:relative;z-index:2}
+.will-para{font-size:clamp(1.1rem,2vw,1.5rem);line-height:1.9;color:var(--cream);margin-bottom:2rem}
+.will-para em{color:var(--gold);font-style:normal;font-weight:600}
+.d-grid{display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;margin-top:3rem}
+.d-card{display:flex;align-items:center;gap:.8rem;background:rgba(10,22,40,.6);border:1px solid rgba(255,215,0,.15);padding:.6rem 1rem;border-radius:2px;transition:all .3s;cursor:default}
+.d-card:hover{border-color:rgba(255,215,0,.4);background:rgba(255,215,0,.05)}
+.d-card-img{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid rgba(255,215,0,.4)}
+.d-card-name{font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold);letter-spacing:.1em}
+
+/* ════════════════════ QUOTES ════════════════════ */
+.quotes-sec{padding:8rem 4rem;text-align:center}
+.quote-slider{max-width:900px;margin:0 auto}
+.big-q{font-family:'Crimson Pro',serif;font-style:italic;font-size:clamp(1.3rem,3vw,2.2rem);line-height:1.7;color:var(--cream);margin-bottom:1.5rem}
+.q-attr{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.4em;color:var(--gold);text-transform:uppercase}
+.q-dots{display:flex;justify-content:center;gap:.5rem;margin-top:2rem}
+.q-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,215,0,.3);cursor:pointer;transition:all .3s;border:none}
+.q-dot.active{background:var(--gold);transform:scale(1.3)}
+
+/* ════════════════════ AUTHOR SECTION ════════════════════ */
+.author-sec{padding:8rem 3rem;background:linear-gradient(180deg,transparent,rgba(10,22,40,.6),transparent)}
+.author-wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1.6fr;gap:5rem;align-items:start}
+.author-img-block{position:relative}
+.author-img{width:100%;border-radius:3px;border:2px solid rgba(255,215,0,.25);filter:sepia(10%) brightness(.95);display:block}
+.author-badge{position:absolute;bottom:-15px;right:-15px;background:var(--deepred);border:2px solid var(--gold);padding:.8rem 1.2rem;text-align:center}
+.author-badge .years{font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:var(--gold);line-height:1}
+.author-badge .since{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.3em;color:var(--smoke);display:block;margin-top:.2rem}
+.author-name{font-family:'Cinzel Decorative',serif;font-size:2.2rem;color:var(--gold);margin-bottom:.3rem;text-shadow:0 0 20px rgba(255,215,0,.3)}
+.author-jp-name{font-family:'Noto Serif JP',serif;font-size:1rem;color:var(--smoke);margin-bottom:2rem;letter-spacing:.3em}
+.author-bio{font-size:1.05rem;line-height:1.95;color:var(--smoke);margin-bottom:1.5rem}
+.author-bio strong{color:var(--gold)}
+.author-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}
+.a-stat{background:rgba(10,22,40,.6);border:1px solid rgba(255,215,0,.12);padding:1.2rem;text-align:center;border-radius:2px}
+.a-stat .val{font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:var(--gold);display:block;line-height:1}
+.a-stat .lbl{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.25em;color:var(--smoke);text-transform:uppercase;display:block;margin-top:.3rem}
+
+/* ════════════════════ SHUEISHA / COMPANY ════════════════════ */
+.company-sec{padding:6rem 3rem;border-top:1px solid rgba(255,215,0,.08)}
+.company-grid{max-width:1100px;margin:3rem auto 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem}
+.co-card{background:rgba(10,22,40,.5);border:1px solid rgba(255,215,0,.1);padding:2rem;border-radius:2px;text-align:center;transition:all .3s}
+.co-card:hover{border-color:rgba(255,215,0,.3);transform:translateY(-5px)}
+.co-icon{font-size:2.5rem;display:block;margin-bottom:1rem}
+.co-name{font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold);letter-spacing:.2em;margin-bottom:.8rem}
+.co-desc{font-size:.9rem;line-height:1.7;color:var(--smoke)}
+
+/* ════════════════════ FOOTER ════════════════════ */
+footer{position:relative;z-index:1;padding:4rem 3rem;text-align:center;border-top:1px solid rgba(255,215,0,.1)}
+.footer-skull{font-size:2.5rem;display:block;margin-bottom:.8rem}
+.footer-title{font-family:'Cinzel Decorative',serif;font-size:1.8rem;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.3);margin-bottom:.5rem}
+.footer-jp{font-family:'Noto Serif JP',serif;font-size:.8rem;color:var(--smoke);letter-spacing:.4em;margin-bottom:1rem}
+.footer-copy{font-family:'Cinzel',serif;font-size:.55rem;color:var(--smoke);opacity:.4;letter-spacing:.3em;text-transform:uppercase}
+
+/* ════════════════════ POPUP ════════════════════ */
+.popup-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:490;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px)}
+.popup-ov.on{opacity:1;pointer-events:all}
+.popup-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);background:linear-gradient(135deg,rgba(6,10,20,.98),rgba(10,22,40,.98));border:1px solid rgba(255,215,0,.25);padding:2.5rem;max-width:580px;width:92%;z-index:500;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.16,1,.3,1);border-radius:3px;box-shadow:0 30px 80px rgba(0,0,0,.8),0 0 0 1px rgba(255,215,0,.08)}
+.popup-box.on{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1)}
+.popup-close{position:absolute;top:1rem;right:1.2rem;font-family:'Cinzel',serif;color:var(--smoke);cursor:pointer;font-size:1rem;transition:color .2s;background:none;border:none}
+.popup-close:hover{color:var(--gold)}
+.popup-img{width:100%;height:240px;object-fit:cover;object-position:top;border-radius:2px;margin-bottom:1.5rem;border:1px solid rgba(255,215,0,.15)}
+.popup-name{font-family:'Cinzel Decorative',serif;font-size:1.8rem;color:var(--gold);margin-bottom:.3rem}
+.popup-role{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.3em;color:var(--teal);text-transform:uppercase;margin-bottom:1.2rem}
+.popup-text{font-size:1rem;line-height:1.85;color:var(--smoke);margin-bottom:.8rem}
+.popup-text strong{color:var(--gold)}
+.popup-bounty{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--deepred);background:rgba(139,0,0,.1);border:1px solid rgba(139,0,0,.3);padding:.4rem 1rem;display:inline-block;margin-top:.5rem}
+
+/* ════════════════════ RESPONSIVE ════════════════════ */
+@media(max-width:900px){
+  .meaning-grid,.author-wrap{grid-template-columns:1fr}
+  .company-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .meaning-sec,.bounty-sec,.arcs-sec,.fruits-sec,.will-sec,.quotes-sec,.author-sec,.company-sec{padding:5rem 1.5rem}
+}
+
+/* floating ship */
+.ship-float{position:fixed;bottom:70px;right:-150px;z-index:50;pointer-events:none;animation:bob 4s ease-in-out infinite;transition:right 2s cubic-bezier(.16,1,.3,1)}
+.ship-float.show{right:20px}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+<div id="cur"></div>
+<div id="curdot"></div>
+<canvas id="oceanCanvas"></canvas>
+<div class="paper-texture"></div>
+
+<!-- FLOATING SHIP SVG -->
+<div class="ship-float" id="shipFloat">
+  <svg width="100" height="65" viewBox="0 0 100 65" fill="none">
+    <path d="M12 42 L88 42 L76 58 L24 58 Z" fill="#7B3F00"/>
+    <path d="M24 58 L76 58 L70 64 L30 64 Z" fill="#5D2E00"/>
+    <rect x="47" y="4" width="4" height="38" fill="#4A3728"/>
+    <path d="M51 6 L51 32 L28 22 Z" fill="rgba(245,236,215,.92)"/>
+    <path d="M51 6 L51 32 L74 22 Z" fill="rgba(245,236,215,.75)"/>
+    <circle cx="51" cy="4" r="5" fill="var(--gold)"/>
+    <path d="M6 44 Q51 32 96 44" stroke="rgba(255,215,0,.2)" stroke-width="1" fill="none"/>
+    <path d="M15 52 Q51 44 87 52" stroke="rgba(255,215,0,.1)" stroke-width="1" fill="none"/>
+  </svg>
+</div>
+
+<!-- POPUP OVERLAY -->
+<div class="popup-ov" id="popOv" onclick="closePop()"></div>
+<div class="popup-box" id="popBox">
+  <button class="popup-close" onclick="closePop()">✕ CLOSE</button>
+  <div id="popContent"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">☠ ONE PIECE — 海賊王</div>
+  <ul class="nav-links">
+    <li><a href="#meaning">The Secret</a></li>
+    <li><a href="#bounty">Wanted</a></li>
+    <li><a href="#branch">Crew Lines</a></li>
+    <li><a href="#arcs">Arcs</a></li>
+    <li><a href="#fruits">Devil Fruits</a></li>
+    <li><a href="#author">Creator</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero z1">
+  <div class="hero-ship-bg"></div>
+  <p class="hero-eyebrow jp">海賊王に、おれはなる！</p>
+  <h1 class="hero-title">ONE<br>PIECE</h1>
+  <p class="hero-jp">ひとつなぎの大秘宝</p>
+  <p class="hero-desc">
+    The greatest adventure ever told — a world of <em>Devil Fruits</em>, <em>Haki</em>, and the eternal sea.<br>
+    One boy's dream to become <em>King of the Pirates</em> reshapes history.
+  </p>
+  <div class="hero-img-strip">
+    <img src="https://upload.wikimedia.org/wikipedia/en/4/4b/Luffy_at_Marineford.png" alt="Luffy" title="Luffy" onerror="this.src='https://i.imgur.com/placeholder.png'">
+    <img src="https://upload.wikimedia.org/wikipedia/en/1/13/Roronoa_Zoro.png" alt="Zoro" title="Zoro" onerror="this.style.display='none'">
+    <img src="https://upload.wikimedia.org/wikipedia/en/3/37/Nami_post_timeskip.png" alt="Nami" title="Nami" onerror="this.style.display='none'">
+    <img src="https://upload.wikimedia.org/wikipedia/en/4/4c/Usopp_One_Piece.png" alt="Usopp" title="Usopp" onerror="this.style.display='none'">
+    <img src="https://upload.wikimedia.org/wikipedia/en/d/d5/Sanji_One_Piece.png" alt="Sanji" title="Sanji" onerror="this.style.display='none'">
+  </div>
+  <div class="scroll-hint">
+    <span>Begin the Voyage</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap z1">
+  <div class="marquee-inner" id="mq"></div>
+</div>
+
+<!-- ═══════════ WHAT IS ONE PIECE ═══════════ -->
+<section class="meaning-sec z1" id="meaning">
+  <div class="meaning-grid">
+    <div class="rev-l">
+      <span class="sec-label" style="color:var(--red)">ひとつなぎの大秘宝 — The Real Truth</span>
+      <h2 class="sec-title" style="font-size:clamp(2rem,4vw,3.2rem);color:var(--gold);margin-bottom:2rem">What Is<br><span style="font-size:1.3em">One Piece?</span></h2>
+      <p class="meaning-text">One Piece is not simply gold or treasure. It is <strong>proof</strong> — undeniable, physical, world-shaking proof that Gol D. Roger lived, sailed, laughed, and conquered everything. When Roger reached the final island <strong>Laugh Tale</strong>, he found the treasure left by Joy Boy 800 years before — and he laughed, because he finally understood the whole truth.</p>
+      <p class="meaning-text">The One Piece is the <strong>accumulated wealth of all the world's kingdoms</strong> — every nation's greatest possession, brought to one location by the ancient giant Joy Boy as both an apology and a promise to the people of Fishman Island and to all the oppressed of the world.</p>
+      <p class="meaning-text">But deeper still: One Piece is the story of <strong>human freedom versus divine tyranny</strong>. The Void Century reveals that the World Government was built on the erasure of a great civilization — one that believed all people should be free. The Poneglyphs were Joy Boy's message, carved in stone so that even gods could not silence them.</p>
+      <p class="meaning-text">The final truth: <strong>Roger could not "inherit the will"</strong> — he was born too early. He needed someone to come after him. Someone with the power of the Sun God Nika. Someone who would laugh in the face of everything — even the heavens.</p>
+    </div>
+    <div class="rev-r meaning-img-wrap">
+      <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/90/One_Piece%2C_Volume_61_Cover_%28Japanese%29.jpg/250px-One_Piece%2C_Volume_61_Cover_%28Japanese%29.jpg"
+           alt="One Piece Treasure" style="width:100%;border-radius:4px;border:2px solid rgba(255,215,0,.25)">
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ BOUNTY POSTERS ═══════════ -->
+<section class="bounty-sec z1" id="bounty">
+  <div class="section-header" style="text-align:center;max-width:1400px;margin:0 auto">
+    <span class="sec-label" style="color:var(--gold)">海軍本部 — Marine HQ Wanted Posters</span>
+    <h2 class="sec-title" style="font-size:clamp(2rem,5vw,3.8rem);color:var(--gold)">WANTED<br><span style="font-size:.6em;letter-spacing:.3em;color:var(--cream)">DEAD OR ALIVE</span></h2>
+  </div>
+  <div class="bounty-grid" id="bountyGrid">
+    <!-- Rendered by JS -->
+  </div>
+</section>
+
+<!-- ═══════════ CHARACTER BRANCH LINE ═══════════ -->
+<section class="branch-sec z1" id="branch">
+  <div style="text-align:center;max-width:1400px;margin:0 auto">
+    <span class="sec-label" style="color:var(--teal)">麦わら海賊団 — Relationship Web</span>
+    <h2 class="sec-title" style="font-size:clamp(2rem,5vw,3.5rem);color:var(--gold);margin-bottom:.5rem">Straw Hat<br>Crew Branch Lines</h2>
+    <p style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.3em;color:var(--smoke);margin-bottom:1rem">CLICK A NODE TO LEARN MORE · SCROLL TO EXPLORE</p>
+  </div>
+  <div class="branch-container">
+    <div class="branch-canvas-wrap" id="branchWrap">
+      <svg id="branchSvg"></svg>
+      <!-- nodes injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ARCS ═══════════ -->
+<section class="arcs-sec z1" id="arcs">
+  <div style="text-align:center;max-width:1400px;margin:0 auto">
+    <span class="sec-label" style="color:var(--teal)">冒険の記録 — The Adventures</span>
+    <h2 class="sec-title" style="font-size:clamp(2rem,5vw,3.8rem);color:var(--gold)">Story Arcs</h2>
+  </div>
+  <div class="arc-cards" id="arcCards"></div>
+</section>
+
+<!-- ═══════════ DEVIL FRUITS ═══════════ -->
+<section class="fruits-sec z1" id="fruits">
+  <div style="text-align:center;max-width:1300px;margin:0 auto">
+    <span class="sec-label" style="color:var(--red)">悪魔の実 — Cursed Powers</span>
+    <h2 class="sec-title" style="font-size:clamp(2rem,5vw,3.8rem);color:var(--gold)">Devil Fruits</h2>
+    <p style="font-family:'Crimson Pro',serif;font-style:italic;color:var(--smoke);margin-top:.8rem;font-size:1.1rem">"Those who eat them lose the ability to swim — but gain powers beyond imagination."</p>
+  </div>
+  <div class="fruit-grid" id="fruitGrid"></div>
+</section>
+
+<!-- ═══════════ WILL OF D ═══════════ -->
+<section class="will-sec z1" id="will">
+  <div class="will-content">
+    <span class="sec-label" style="color:var(--gold);text-align:center">'D' の意志 — The Inherited Will</span>
+    <h2 class="sec-title" style="font-size:clamp(2.5rem,6vw,5rem);color:var(--white);margin-bottom:3rem">The <span style="color:var(--gold)">Will</span> of D.</h2>
+    <p class="will-para rev">Across eight centuries, a single initial reappears in those who challenge fate and authority. Those who carry the name "<em>D</em>" are described by the Gorosei as <em>"natural enemies of God."</em></p>
+    <p class="will-para rev">Roger laughed at his own execution. Whitebeard died standing upright. Ace smiled at the end. Luffy grins in the face of emperors. <em>Those with the D never kneel</em> — even before death, they smile.</p>
+    <p class="will-para rev">The Will of D is not inherited through blood alone — it is a <em>promise passed through time</em>. Joy Boy made a promise he could not keep. Roger found it 800 years too late. Luffy is the one who will finally fulfill it.</p>
+    <div class="d-grid rev" id="dGrid"></div>
+  </div>
+</section>
+
+<!-- ═══════════ QUOTES ═══════════ -->
+<section class="quotes-sec z1">
+  <div class="quote-slider rev">
+    <h2 class="sec-title" style="font-size:clamp(1.5rem,3vw,2.5rem);color:var(--gold);margin-bottom:3rem">Words That<br>Changed the World</h2>
+    <div id="quoteText" class="big-q"></div>
+    <div id="quoteAttr" class="q-attr"></div>
+    <div class="q-dots" id="qDots"></div>
+  </div>
+</section>
+
+<!-- ═══════════ AUTHOR ═══════════ -->
+<section class="author-sec z1" id="author">
+  <div style="text-align:center;max-width:1100px;margin:0 auto 4rem">
+    <span class="sec-label" style="color:var(--teal)">作者について — About the Creator</span>
+    <h2 class="sec-title" style="font-size:clamp(2rem,5vw,3.5rem);color:var(--gold)">The God of Pirates</h2>
+  </div>
+  <div class="author-wrap">
+    <div class="rev-l author-img-block">
+      <img class="author-img"
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Eiichiro_Oda_2009.jpg/440px-Eiichiro_Oda_2009.jpg"
+        alt="Eiichiro Oda">
+      <div class="author-badge"><span class="years">27+</span><span class="since">Years of One Piece</span></div>
+    </div>
+    <div class="rev-r">
+      <div class="author-name">Eiichiro Oda</div>
+      <div class="author-jp-name">尾田 栄一郎</div>
+      <p class="author-bio">Born on <strong>January 1, 1975</strong> in Kumamoto, Japan, Eiichiro Oda showed his passion for drawing pirates as early as age 4. Inspired by Akira Toriyama's Dragon Ball and Mitsutoshi Shimabukuro's Toriko, he submitted his first manga at age 17 to Shueisha — and won recognition immediately.</p>
+      <p class="author-bio">He apprenticed under <strong>Nobuhiro Watsuki</strong> (Rurouni Kenshin) and worked as an assistant on multiple manga before debuting One Piece in <strong>Weekly Shōnen Jump on July 22, 1997</strong>. He famously pitched the idea as "a pirate manga where no one dies easily" — pirates who fight not for conquest, but for <strong>freedom and dreams</strong>.</p>
+      <p class="author-bio">Oda is known for his extraordinary worldbuilding — foreshadowing events <strong>decades in advance</strong>, hiding clues in background art, and layering philosophy and history into what appears to be a simple adventure. He works around the clock, often sleeping only 3 hours a night, yet still finds time to answer fan letters personally.</p>
+      <p class="author-bio">His greatest quote: <em style="color:var(--gold)">"Pirates are evil? The Marines are righteous? These are matters of perspective... Fools who don't respect the past are doomed to repeat it."</em></p>
+      <div class="author-stats">
+        <div class="a-stat"><span class="val">110+</span><span class="lbl">Manga Volumes</span></div>
+        <div class="a-stat"><span class="val">1000+</span><span class="lbl">Chapters Written</span></div>
+        <div class="a-stat"><span class="val">516M+</span><span class="lbl">Copies in Circulation</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ COMPANY ═══════════ -->
+<section class="company-sec z1">
+  <div style="text-align:center;max-width:1100px;margin:0 auto">
+    <span class="sec-label" style="color:var(--gold)">制作会社 — The Publishers & Studios</span>
+    <h2 class="sec-title" style="font-size:clamp(1.8rem,4vw,3rem);color:var(--gold)">Behind the Legend</h2>
+  </div>
+  <div class="company-grid">
+    <div class="co-card rev">
+      <span class="co-icon">📖</span>
+      <div class="co-name">Shueisha Inc.</div>
+      <p class="co-desc">Japan's largest manga publisher. Home of Weekly Shōnen Jump — the magazine that launched Dragon Ball, Naruto, and One Piece. Founded in 1926, Shueisha has published One Piece since Volume 1 in 1997. Their Jump Comics label holds the Guinness World Record for best-selling manga series by a single author.</p>
+    </div>
+    <div class="co-card rev">
+      <span class="co-icon">🎬</span>
+      <div class="co-name">Toei Animation</div>
+      <p class="co-desc">The legendary anime studio behind the One Piece anime adaptation, airing since October 20, 1999. Toei Animation has produced over 1,100+ episodes, 15 films, and countless specials. Known also for Dragon Ball Z, Sailor Moon, and Digimon. The longest-running anime adaptation of a single manga series in modern history.</p>
+    </div>
+    <div class="co-card rev">
+      <span class="co-icon">🌍</span>
+      <div class="co-name">Weekly Shōnen Jump</div>
+      <p class="co-desc">The world's most-read manga anthology magazine, published every Monday in Japan. At its 1994 peak, sold 6.5 million copies weekly. One Piece has run continuously here since 1997, surviving every era of manga. The series has been in the top 3 best-selling manga globally for over 20 consecutive years.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="z1">
+  <span class="footer-skull">☠</span>
+  <div class="footer-title">ONE PIECE</div>
+  <div class="footer-jp jp">ひとつなぎの大秘宝 — The Treasure That Connects All</div>
+  <p style="font-family:'Crimson Pro',serif;font-style:italic;color:var(--smoke);max-width:500px;margin:.8rem auto 1.5rem;font-size:1rem;line-height:1.7">"What people dream of, what they leave behind, and what they inherit — this is what gives the world meaning."</p>
+  <p class="footer-copy">One Piece © Eiichiro Oda / Shueisha · Toei Animation · Est. 1997 · Fan Tribute Site</p>
+</footer>
+
+<script>
+/* ══════════════ CURSOR ══════════════ */
+const cur=document.getElementById('cur'),curdot=document.getElementById('curdot');
+let mx=0,my=0,cx=0,cy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function animCur(){cx+=(mx-cx)*.15;cy+=(my-cy)*.15;cur.style.left=cx+'px';cur.style.top=cy+'px';curdot.style.left=mx+'px';curdot.style.top=my+'px';requestAnimationFrame(animCur)})();
+document.querySelectorAll('a,button,.bounty-poster,.arc-card,.fruit-card,.branch-node,.co-card,.d-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2)';cur.style.borderColor='rgba(255,215,0,.6)'});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';cur.style.borderColor='var(--gold)'});
+});
+
+/* ══════════════ PROGRESS ══════════════ */
+window.addEventListener('scroll',()=>{
+  const p=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
+  document.getElementById('prog').style.width=p+'%';
+});
+
+/* ══════════════ CANVAS OCEAN ══════════════ */
+const canvas=document.getElementById('oceanCanvas');
+const ctx=canvas.getContext('2d');
+let W,H,stars=[],wavePhase=0;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;stars=[];for(let i=0;i<220;i++)stars.push({x:Math.random()*W,y:Math.random()*H*.65,r:Math.random()*1.5+.3,a:Math.random(),da:(.002+Math.random()*.005)*(Math.random()<.5?1:-1)})}
+resize();window.addEventListener('resize',resize);
+function drawOcean(){
+  ctx.clearRect(0,0,W,H);
+  // Sky gradient
+  const sg=ctx.createLinearGradient(0,0,0,H);
+  sg.addColorStop(0,'#020810');sg.addColorStop(.6,'#061428');sg.addColorStop(1,'#0A1E36');
+  ctx.fillStyle=sg;ctx.fillRect(0,0,W,H);
+  // Stars
+  stars.forEach(s=>{s.a+=s.da;if(s.a>1||s.a<0)s.da*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill()});
+  // Moon
+  const moonY=H*.12;ctx.beginPath();ctx.arc(W*.82,moonY,28,0,Math.PI*2);const mg=ctx.createRadialGradient(W*.82,moonY,0,W*.82,moonY,28);mg.addColorStop(0,'rgba(255,235,180,.85)');mg.addColorStop(1,'rgba(255,215,100,.2)');ctx.fillStyle=mg;ctx.fill();
+  ctx.beginPath();ctx.arc(W*.82+10,moonY-5,22,0,Math.PI*2);ctx.fillStyle='rgba(2,8,16,.85)';ctx.fill();
+  // Glow around moon
+  const lg=ctx.createRadialGradient(W*.82,moonY,0,W*.82,moonY,80);lg.addColorStop(0,'rgba(255,235,180,.06)');lg.addColorStop(1,'transparent');ctx.fillStyle=lg;ctx.fillRect(W*.82-80,moonY-80,160,160);
+  // Waves
+  wavePhase+=.006;
+  [[.35,.2,1.5,'rgba(0,80,140,.35)'],[.42,.15,1.2,'rgba(0,60,120,.25)'],[.28,.25,1.8,'rgba(0,100,160,.2)']].forEach(([freq,amp,speed,color],i)=>{
+    ctx.beginPath();ctx.moveTo(0,H*.7+i*15);
+    for(let x=0;x<=W;x+=4){ctx.lineTo(x,H*.7+i*15+Math.sin(x*freq*.01+wavePhase*speed)*H*amp*.05)}
+    ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=color;ctx.fill();
+  });
+  requestAnimationFrame(drawOcean);
+}
+drawOcean();
+
+/* ══════════════ SHIP FLOAT ══════════════ */
+setTimeout(()=>document.getElementById('shipFloat').classList.add('show'),3500);
+
+/* ══════════════ MARQUEE ══════════════ */
+const mqItems=['East Blue','✦','Alabasta','✦','Skypiea','✦','Water 7','✦','Enies Lobby','✦','Thriller Bark','✦','Marineford','✦','Fish-Man Island','✦','Punk Hazard','✦','Dressrosa','✦','Zou','✦','Whole Cake Island','✦','Wano Kuni','✦','Egghead','✦','Laugh Tale','✦'];
+const mq=document.getElementById('mq');
+[...mqItems,...mqItems].forEach(t=>{const s=document.createElement('span');s.textContent=t;if(t==='✦')s.className='dot';mq.appendChild(s)});
+
+/* ══════════════ REVEAL OBSERVER ══════════════ */
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on')}),{threshold:.12});
+document.querySelectorAll('.rev,.rev-l,.rev-r').forEach(el=>obs.observe(el));
+
+/* ══════════════ DATA ══════════════ */
+const crewData=[
+  {id:'luffy',name:'Monkey D. Luffy',jp:'モンキー・D・ルフィ',role:'Captain',bounty:'3,000,000,000',berries:'Three Billion Berries',age:'19',img:'https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/Luffy_at_Marineford.png/220px-Luffy_at_Marineford.png',color:'#C0392B',fruit:'Hito Hito no Mi, Model: Nika',haki:'Conqueror\'s, Armament, Observation',dream:'King of the Pirates',bio:'The rubber-bodied captain of the Straw Hats. Inspired by Shanks, he ate the cursed fruit, formed a crew, and challenged emperors. His Gear Fifth awakening as the Sun God Nika is the most ridiculous, most free power in history.',detail:'Son of Revolutionary Army Dragon, grandson of Marine hero Garp. Born in Foosha Village. His signature Gear Fifth transforms him into a cartoon-like god of joy and liberation. The World Government classified his fruit as the most dangerous in the world.'},
+  {id:'zoro',name:'Roronoa Zoro',jp:'ロロノア・ゾロ',role:'First Mate / Swordsman',bounty:'1,111,000,000',berries:'One Billion, One Hundred Eleven Million',age:'21',img:'https://upload.wikimedia.org/wikipedia/en/thumb/1/13/Roronoa_Zoro.png/220px-Roronoa_Zoro.png',color:'#27AE60',fruit:'None',haki:'Conqueror\'s, Armament, Observation',dream:'World\'s Greatest Swordsman',bio:'Three-sword style master who fights with a blade in each hand and one in his mouth. Promised his childhood friend Kuina he would become the greatest swordsman. Wields Enma, a sword that once drew Kaido\'s blood.',detail:'Cut himself across the chest at Thriller Bark — absorbing all of Luffy\'s pain to protect him — and told Kuma: "Nothing happened." Defeated Mihawk\'s student Daz Bones, Admiral Fujitora\'s subordinate Pica, and King of Kaido\'s crew. His left eye is a mystery.'},
+  {id:'nami',name:'Nami',jp:'ナミ',role:'Navigator',bounty:'366,000,000',berries:'Three Hundred Sixty-Six Million',age:'20',img:'https://upload.wikimedia.org/wikipedia/en/thumb/3/37/Nami_post_timeskip.png/220px-Nami_post_timeskip.png',color:'#F39C12',fruit:'None',haki:'None (Clima-Tact mastery)',dream:'Map of the Entire World',bio:'The greatest navigator on the seas. Raised by Marine officer Bell-mère. Enslaved by fish-man Arlong for 8 years, forced to steal to buy her village. Freed by Luffy. Wields the Clima-Tact, a weather weapon powered by soul-cloud Zeus.',detail:'Her backstory is one of One Piece\'s most devastating — she drew maps alone in the dark for years, crying where no one could see. When she went to Luffy for help, she called him "Luffy" instead of just "you" for the first time. He gave her his hat.'},
+  {id:'usopp',name:'Usopp',jp:'ウソップ',role:'Sniper',bounty:'500,000,000',berries:'Five Hundred Million',age:'19',img:'https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Usopp_One_Piece.png/220px-Usopp_One_Piece.png',color:'#E67E22',fruit:'None',haki:'Observation Haki (5km range)',dream:'Brave Warrior of the Sea',bio:'Son of Shanks\' crewmate Yasopp. His lies always come true. Called himself Sogeking at Enies Lobby. Freed thousands with a single sniping shot in Dressrosa. Worshipped as "God Usopp" by dwarves.',detail:'His most powerful moment: sniping Sugar from 2 kilometers away at Dressrosa, freeing thousands of Toy Soldiers who had been transformed. The dwarves created a religion around him. His 500M berry bounty shocked even his crew.'},
+  {id:'sanji',name:'Vinsmoke Sanji',jp:'ヴィンスモーク・サンジ',role:'Cook',bounty:'1,032,000,000',berries:'One Billion Thirty-Two Million',age:'21',img:'https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Sanji_One_Piece.png/220px-Sanji_One_Piece.png',color:'#F39C12',fruit:'None',haki:'Armament, Observation',dream:'All Blue — the legendary sea',bio:'Third prince of the Vinsmoke family, genetically engineered to be emotionless — except his mother took a drug to preserve his heart. Trained by Zeff on a barren rock. Legs burn with Ifrit Jambe.',detail:'His rule: never hit a woman, never let food go to waste. He once went without food on a barren rock for 85 days alongside Zeff, secretly giving all remaining food to the child Sanji. This sacrifice shaped his entire philosophy.'},
+  {id:'chopper',name:'Tony Tony Chopper',jp:'トニートニー・チョッパー',role:'Doctor',bounty:'1,000',berries:'One Thousand (Mistaken for mascot)',age:'17',img:'https://upload.wikimedia.org/wikipedia/en/thumb/f/f0/Tony_Tony_Chopper.png/220px-Tony_Tony_Chopper.png',color:'#3498DB',fruit:'Hito Hito no Mi (Human)',haki:'None',dream:'Doctor who can cure any disease',bio:'A reindeer who ate the Hito Hito no Mi and gained human intelligence. Trained by Dr. Hiriluk and Dr. Kureha. Can transform into 7 forms via Rumble Ball. Monster Point makes him a towering beast.',detail:'Dr. Hiriluk died laughing — poisoning himself rather than burdening others. His dying words: "What a wonderful life I had!" Chopper carries Hiriluk\'s flag on his hat. His incredibly low bounty is a running joke — the Marines mistake him for a pet.'},
+  {id:'robin',name:'Nico Robin',jp:'ニコ・ロビン',role:'Archaeologist',bounty:'930,000,000',berries:'Nine Hundred Thirty Million',age:'30',img:'https://upload.wikimedia.org/wikipedia/en/thumb/7/7f/Nico_Robin.png/220px-Nico_Robin.png',color:'#8E44AD',fruit:'Hana Hana no Mi (Flower)',haki:'Armament',dream:'Find the Rio Poneglyph — the True History',bio:'Sole survivor of Ohara, the island of scholars. Knows the Void Century. Only living person who can read Poneglyphs. Lived 20 years as a fugitive. Joined the Straw Hats after Enies Lobby. Wields Mil Fleur — bloom of a thousand arms.',detail:'Her most powerful scene: captured by the World Government at Enies Lobby and asked if she wants to live. After years of living only to survive, she finally screams "I WANT TO LIVE! Take me out to sea with you!" The crew declares war on the world.'},
+  {id:'franky',name:'Franky',jp:'フランキー',role:'Shipwright',bounty:'394,000,000',berries:'Three Hundred Ninety-Four Million',age:'36',img:'https://upload.wikimedia.org/wikipedia/en/thumb/e/ea/Franky_One_Piece.png/220px-Franky_One_Piece.png',color:'#1ABC9C',fruit:'None (Cyborg)',haki:'Armament',dream:'Sail his dream ship around the world',bio:'Born Cutty Flam. Apprenticed to Tom — the man who built Roger\'s ship Oro Jackson. Rebuilt himself into a cola-powered cyborg after being hit by a train. Built the Thousand Sunny from Wano\'s legendary Adam Wood.',detail:'Tom was arrested for building Roger\'s ship and accepted his sentence bravely. Franky watched his mentor taken away and broke down. He rebuilt himself not just physically but philosophically — to protect the ships and the people who sail them.'},
+  {id:'brook',name:'Brook',jp:'ブルック',role:'Musician',bounty:'383,000,000',berries:'Three Hundred Eighty-Three Million',age:'90 (38 before death)',img:'https://upload.wikimedia.org/wikipedia/en/thumb/1/12/Brook_One_Piece.png/220px-Brook_One_Piece.png',color:'#95A5A6',fruit:'Yomi Yomi no Mi (Revive)',haki:'Armament',dream:'Return to Laboon — the whale at Twin Cape',bio:'A living skeleton who died and returned to life. Wandered the Florian Triangle alone for 50 years. Now the world-famous Soul King. Wields Soul Solid — a chilled blade of death energy.',detail:'His crew all died from a disease. He waited alone for 50 years maintaining the ship, keeping his afro intact (so Laboon would recognize him), and playing music for his fallen crew. "Even if I cannot see your face, I can look into your heart."'},
+  {id:'jinbe',name:'Jinbei',jp:'ジンベエ',role:'Helmsman',bounty:'1,100,000,000',berries:'One Billion One Hundred Million',age:'46',img:'https://upload.wikimedia.org/wikipedia/en/thumb/1/12/Jinbe_One_Piece.png/220px-Jinbe_One_Piece.png',color:'#2980B9',fruit:'None (Fish-Man)',haki:'Armament, Observation',dream:'Peace between Fish-Men and Humans',bio:'Former Warlord of the Sea. Captain of the Sun Pirates. The man who gave Luffy his blood to survive after Marineford. The last to join the Straw Hats, and perhaps the most indispensable — their helmsman and anchor.',detail:'He was the voice of reason when Luffy nearly broke after Ace\'s death. He held Luffy physically, told him to count what he still had — and that list started with nine nakama. He left Big Mom\'s crew, knowing the consequences, to join Luffy\'s side.'},
+];
+
+const arcData=[
+  {num:'01-05',name:'East Blue Saga',jp:'東の海編',tag:'East Blue',color:'#3498DB',img:'https://upload.wikimedia.org/wikipedia/en/thumb/c/c2/One_Piece_Volume_1_Cover.png/220px-One_Piece_Volume_1_Cover.png',desc:'The origin. Luffy sets sail from Foosha Village, recruits Zoro (a pirate hunter trapped to a post), Nami (a thief who hates pirates), Usopp (a liar who tells the truth), and Sanji (a cook who fights with his feet). Arlong Park ends with Luffy\'s first defining moment — punching the sky for his navigator.'},
+  {num:'06-08',name:'Arabasta Saga',jp:'アラバスタ編',tag:'Grand Line',color:'#E6B800',img:'https://upload.wikimedia.org/wikipedia/en/thumb/7/74/One_Piece_Volume_13.png/220px-One_Piece_Volume_13.png',desc:'A kingdom of sand brought to the brink of civil war by Warlord Crocodile\'s puppet strings. Princess Vivi\'s desperate plea for her people. Luffy defeats Crocodile three times — the last time punching through the earth itself. "Tears won\'t bring the dead back — so live!"'},
+  {num:'10',name:'Skypiea Saga',jp:'空島編',tag:'Sky Island',color:'#9B59B6',img:'https://upload.wikimedia.org/wikipedia/en/thumb/0/05/One_Piece_Volume_26.png/220px-One_Piece_Volume_26.png',desc:'An island in the clouds ruled by the self-declared God Enel, who controls lightning and plans to destroy all life. The 400-year war between the Shandorians and Skypieans. The first real Poneglyph contact. Enel\'s lightning is useless against rubber — and a rubber man ends 400 years of conflict.'},
+  {num:'13-15',name:'Water 7 / Enies Lobby',jp:'ウォーターセブン編',tag:'Grand Line',color:'#1ABC9C',img:'https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/One_Piece_Volume_34.png/220px-One_Piece_Volume_34.png',desc:'Robin whispers "I want to live." The Straw Hats burn the World Government flag. Luffy defeats the entire CP9 with Gear Second. Franky joins. The Buster Call falls. This arc has the most emotional peak in the series — a woman who lived 20 years wanting to die, finally choosing life because of her crew.'},
+  {num:'18',name:'Marineford War',jp:'頂上戦争編',tag:'War Arc',color:'#C0392B',img:'https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/One_Piece_Volume_54.png/220px-One_Piece_Volume_54.png',desc:'The Summit War of Marineford. Whitebeard\'s last stand. The three admirals. Blackbeard\'s betrayal. Ace\'s execution — and death. Luffy witnesses the end of his brother in his own arms. The world shakes. The New Era begins. "I couldn\'t save him." One Piece\'s darkest hour, from which Luffy must rebuild.'},
+  {num:'22',name:'Dressrosa',jp:'ドレスローザ編',tag:'New World',color:'#E67E22',img:'https://upload.wikimedia.org/wikipedia/en/thumb/6/6c/One_Piece_Volume_70.png/220px-One_Piece_Volume_70.png',desc:'A kingdom enslaved by Donquixote Doflamingo\'s invisible strings. People turned into toys, their memories erased from loved ones. A one-legged toy soldier who waited 10 years. Luffy\'s Gear Fourth. Law\'s revenge. 5,000 bounty-hunters chasing Luffy across a birdcage that crushes inward.'},
+  {num:'25',name:'Whole Cake Island',jp:'ホールケーキアイランド編',tag:'New World',color:'#E74C3C',img:'https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/One_Piece_Volume_82.png/220px-One_Piece_Volume_82.png',desc:'Big Mom\'s territory. Sanji\'s forced wedding. The Vinsmoke truth. Mirror World battles. Pedro\'s sacrifice. Brook steals Big Mom\'s Poneglyph copy alone. Luffy\'s "I\'m going to defeat you, Big Mom!" A wedding cake made to stop a Yonko\'s rampage. Sanji and Luffy\'s tear-soaked reunion fight.'},
+  {num:'26',name:'Wano Kuni',jp:'ワノ国編',tag:'New World',color:'#C0392B',img:'https://upload.wikimedia.org/wikipedia/en/thumb/e/e5/One_Piece_Volume_91.png/220px-One_Piece_Volume_91.png',desc:'A nation enslaved by Kaido — the world\'s strongest creature. Kozuki Oden\'s legendary 20-year samurai tale. Zoro wields Enma. The Nine Red Scabbards attack Kaido. Luffy loses — then returns. Gear Fifth awakens. The Sun God Nika laughs in Kaido\'s face. The world changes forever.'},
+  {num:'27+',name:'Egghead / Final Saga',jp:'エッグヘッド編',tag:'Final Saga',color:'#2ECC71',img:'https://upload.wikimedia.org/wikipedia/en/thumb/e/e9/One_Piece_Volume_104.png/220px-One_Piece_Volume_104.png',desc:'Dr. Vegapunk\'s island of science and future technology. The Five Elders descend personally. The Void Century begins to be revealed. Kuma\'s tragic past exposed. The final war approaches. Every piece of One Piece\'s 27-year tapestry converges toward Laugh Tale and the truth that will shake the world.'},
+];
+
+const fruitData=[
+  {name:'Gomu Gomu / Nika',type:'zoan',typeLabel:'Mythical Zoan',img:'https://static.wikia.nocookie.net/onepiece/images/9/94/Gomu_Gomu_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521092453',user:'Monkey D. Luffy',power:'Rubber body → Gear 5, Sun God Nika awakening. The World Government\'s most feared fruit, classified as the most dangerous in the world.'},
+  {name:'Mera Mera no Mi',type:'logia',typeLabel:'Logia',img:'https://static.wikia.nocookie.net/onepiece/images/1/1e/Mera_Mera_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Ace → Sabo',power:'Control over fire. Became the symbol of Ace\'s life and death. Sabo ate it to inherit his brother\'s will after Dressrosa.'},
+  {name:'Hie Hie no Mi',type:'logia',typeLabel:'Logia',img:'https://static.wikia.nocookie.net/onepiece/images/3/3c/Hie_Hie_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Admiral Aokiji (Kuzan)',power:'Control over ice. Froze the entire Marineford bay. Froze Robin\'s crew 10 years before the story began. Now allies with Blackbeard.'},
+  {name:'Goro Goro no Mi',type:'logia',typeLabel:'Logia',img:'https://static.wikia.nocookie.net/onepiece/images/a/a0/Goro_Goro_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Enel of Skypiea',power:'200 million volt lightning. "I am God." Defeated by Luffy\'s rubber immunity — the only time his power ever failed him. Now on the moon.'},
+  {name:'Yami Yami no Mi',type:'logia',typeLabel:'Logia',img:'https://static.wikia.nocookie.net/onepiece/images/b/be/Yami_Yami_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Marshall D. Teach (Blackbeard)',power:'The unique Logia that cannot become its element. Nullifies Devil Fruit powers on contact. Roger\'s crew called it "the most evil fruit in existence."'},
+  {name:'Gura Gura no Mi',type:'paramecia',typeLabel:'Paramecia',img:'https://static.wikia.nocookie.net/onepiece/images/e/e1/Gura_Gura_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Whitebeard → Blackbeard',power:'Power to crack the air and sea itself. Sengoku called it "the power to destroy the world." Blackbeard stole it from Whitebeard\'s corpse.'},
+  {name:'Ito Ito no Mi',type:'paramecia',typeLabel:'Paramecia',img:'https://static.wikia.nocookie.net/onepiece/images/e/e6/Ito_Ito_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Donquixote Doflamingo',power:'Creates razor strings that controlled an entire nation. His Birdcage shrinks and cuts everything inside. Awakened to spread strings across any surface.'},
+  {name:'Hana Hana no Mi',type:'paramecia',typeLabel:'Paramecia',img:'https://static.wikia.nocookie.net/onepiece/images/6/64/Hana_Hana_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Nico Robin',power:'Bloom limbs anywhere within sight. Mil Fleur: Gigante Mano grows giant hands from clouds. Awakened to sprout full-body clones of herself.'},
+  {name:'Uo Uo no Mi: Seiryu',type:'zoan',typeLabel:'Mythical Zoan',img:'https://static.wikia.nocookie.net/onepiece/images/3/33/Uo_Uo_no_Mi_Model_Seiryu_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210830013234',user:'Kaido, King of Beasts',power:'Transform into an Azure Dragon hundreds of meters long. Breathe Bolo Breath atomic fire. Rain of flaming dragon scales. The world\'s strongest living creature.'},
+  {name:'Yomi Yomi no Mi',type:'paramecia',typeLabel:'Paramecia',img:'https://static.wikia.nocookie.net/onepiece/images/5/51/Yomi_Yomi_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Brook',power:'One resurrection after death. Soul leaves body and wanders until it returns. Awakened to control the soul itself — freeze swords with death\'s chill.'},
+  {name:'Hito Hito no Mi',type:'zoan',typeLabel:'Zoan',img:'https://static.wikia.nocookie.net/onepiece/images/9/93/Hito_Hito_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Tony Tony Chopper',power:'Reindeer gains human intelligence and can shift between animal, hybrid, and human. Rumble Ball unlocks 7 forms including Monster Point.'},
+  {name:'Ope Ope no Mi',type:'paramecia',typeLabel:'Paramecia',img:'https://static.wikia.nocookie.net/onepiece/images/2/28/Ope_Ope_no_Mi_Infobox.png/revision/latest/scale-to-width-down/175?cb=20210521093248',user:'Trafalgar D. Water Law',power:'Creates a "Room" sphere where the user can rearrange anything. Can grant immortality at the cost of the user\'s death. Called "the Ultimate Devil Fruit."'},
+];
+
+const dData=[
+  {name:'Monkey D. Luffy',img:'https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/Luffy_at_Marineford.png/220px-Luffy_at_Marineford.png'},
+  {name:'Monkey D. Dragon',img:'https://static.wikia.nocookie.net/onepiece/images/6/6c/Monkey_D._Dragon_Anime_Infobox.png/revision/latest/scale-to-width-down/220?cb=20220107190629'},
+  {name:'Monkey D. Garp',img:'https://static.wikia.nocookie.net/onepiece/images/a/a1/Monkey_D._Garp_Anime_Infobox.png/revision/latest/scale-to-width-down/220?cb=20220102221340'},
+  {name:'Gol D. Roger',img:'https://static.wikia.nocookie.net/onepiece/images/6/6c/Gol_D._Roger_Anime_Infobox.png/revision/latest/scale-to-width-down/220?cb=20220103163455'},
+  {name:'Portgas D. Ace',img:'https://static.wikia.nocookie.net/onepiece/images/b/b4/Portgas_D._Ace_Anime_Infobox.png/revision/latest/scale-to-width-down/220?cb=20220830032827'},
+  {name:'Marshall D. Teach',img:'https://static.wikia.nocookie.net/onepiece/images/9/9a/Marshall_D._Teach_Anime_Infobox.png/revision/latest/scale-to-width-down/220?cb=20220318233929'},
+  {name:'Trafalgar D. Water Law',img:'https://static.wikia.nocookie.net/onepiece/images/f/f9/Trafalgar_D._Water_Law_Anime_Infobox.png/revision/latest/scale-to-width-down/220?cb=20221102004938'},
+  {name:'Rocks D. Xebec',img:'https://static.wikia.nocookie.net/onepiece/images/e/e5/Rocks_D._Xebec_Anime_Infobox.png/revision/latest/scale-to-width-down/220?cb=20221020192215'},
+];
+
+const quotes=[
+  {text:'"Inherited will, the destiny of the age, and the dreams of the people. These are things that will not be stopped. As long as people continue to pursue the meaning of freedom, these things will never cease to be."',attr:'Gol D. Roger — The Pirate King'},
+  {text:'"Nobody is born into this world to be alone."',attr:'Jaguar D. Saul — Scholar of Ohara'},
+  {text:'"I don\'t want to conquer anything. I just think the person with the most freedom in this ocean is the Pirate King."',attr:'Monkey D. Luffy'},
+  {text:'"When do you think people die? When they are shot through the heart by the bullet of a pistol? No. When they are ravaged by an incurable disease? No. When they drink a soup made from a poisonous mushroom? No! It\'s when... they are forgotten!"',attr:'Dr. Hiriluk — Drum Island'},
+  {text:'"I want to live! Even if I have to go through a thousand hardships — I want to live!"',attr:'Nico Robin — Enies Lobby'},
+  {text:'"There is something that a person must hold before asking others to forgive them — it\'s resolve."',attr:'Roronoa Zoro'},
+];
+
+/* ══════════════ BUILD BOUNTY POSTERS ══════════════ */
+const grid=document.getElementById('bountyGrid');
+crewData.forEach(c=>{
+  grid.innerHTML+=`
+  <div class="bounty-poster rev" onclick="openPop('${c.id}')">
+    <div class="bounty-inner">
+      <div class="bounty-header"><span>☠ WANTED ☠</span></div>
+      <img class="bounty-img" src="${c.img}" alt="${c.name}" onerror="this.src='https://via.placeholder.com/220x200/1a0a00/FFD700?text=${encodeURIComponent(c.name)}'">
+      <div class="bounty-name-bar">
+        <span class="char-n">${c.name}</span>
+        <span class="char-n-jp">${c.jp}</span>
+      </div>
+      <div class="bounty-amount">
+        <span class="bounty-label">BOUNTY — 賞金</span>
+        <div class="bounty-value">฿${c.bounty}<small>${c.berries}</small></div>
+      </div>
+      <span class="bounty-stamp">DEAD OR<br>ALIVE</span>
+      <span class="age-tag">Age ${c.age}</span>
+    </div>
+  </div>`;
+});
+
+/* ══════════════ BUILD BRANCH LINE ══════════════ */
+// Node positions for Straw Hat family tree / relationship web
+const nodePositions=[
+  {id:'luffy', x:650, y:130, color:'#C0392B'},
+  {id:'zoro',  x:300, y:260, color:'#27AE60'},
+  {id:'nami',  x:550, y:260, color:'#F39C12'},
+  {id:'usopp', x:750, y:260, color:'#E67E22'},
+  {id:'sanji', x:1000,y:260, color:'#E6B800'},
+  {id:'chopper',x:200,y:400, color:'#3498DB'},
+  {id:'robin', x:450, y:400, color:'#8E44AD'},
+  {id:'franky', x:650, y:400, color:'#1ABC9C'},
+  {id:'brook', x:850, y:400, color:'#95A5A6'},
+  {id:'jinbe', x:1050,y:400, color:'#2980B9'},
+];
+
+// SVG lines
+const svg=document.getElementById('branchSvg');
+const links=[
+  ['luffy','zoro'],['luffy','nami'],['luffy','usopp'],['luffy','sanji'],
+  ['luffy','chopper'],['luffy','robin'],['luffy','franky'],['luffy','brook'],['luffy','jinbe'],
+  ['zoro','chopper'],['nami','robin'],['sanji','brook'],
+];
+// Draw defs for glow
+svg.innerHTML=`<defs><filter id="gf"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="rgba(255,215,0,.4)"/></marker></defs>`;
+links.forEach(([a,b])=>{
+  const na=nodePositions.find(n=>n.id===a),nb=nodePositions.find(n=>n.id===b);
+  if(!na||!nb)return;
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1',na.x);line.setAttribute('y1',na.y);
+  line.setAttribute('x2',nb.x);line.setAttribute('y2',nb.y);
+  line.setAttribute('stroke','rgba(255,215,0,0.18)');line.setAttribute('stroke-width','1.5');
+  line.setAttribute('stroke-dasharray','4 4');
+  svg.appendChild(line);
+});
+// Central captain label
+const ct=document.createElementNS('http://www.w3.org/2000/svg','text');
+ct.setAttribute('x','650');ct.setAttribute('y','60');ct.setAttribute('text-anchor','middle');
+ct.setAttribute('fill','rgba(255,215,0,.25)');ct.setAttribute('font-size','11');ct.setAttribute('letter-spacing','4');ct.setAttribute('font-family','Cinzel, serif');
+ct.textContent='STRAW HAT PIRATE CREW — 麦わら海賊団';
+svg.appendChild(ct);
+
+// Nodes
+const wrap=document.getElementById('branchWrap');
+wrap.style.height='520px';
+nodePositions.forEach(n=>{
+  const c=crewData.find(ch=>ch.id===n.id);if(!c)return;
+  const div=document.createElement('div');
+  div.className='branch-node';div.style.left=n.x+'px';div.style.top=n.y+'px';
+  div.style.setProperty('--node-color',n.color);
+  div.innerHTML=`<img class="branch-node-img" src="${c.img}" alt="${c.name}" onerror="this.style.background='${n.color}';this.style.display='flex';this.style.alignItems='center';this.style.justifyContent='center'"><div class="branch-node-name">${c.name.split(' ').pop()}</div><div class="branch-node-role">${c.role.split('/')[0].trim()}</div>`;
+  div.onclick=()=>openPop(n.id);
+  wrap.appendChild(div);
+});
+
+/* ══════════════ BUILD ARCS ══════════════ */
+const arcEl=document.getElementById('arcCards');
+arcData.forEach(a=>{
+  arcEl.innerHTML+=`
+  <div class="arc-card rev">
+    <img class="arc-card-img" src="${a.img}" alt="${a.name}" onerror="this.src='https://via.placeholder.com/400x200/061428/FFD700?text=${encodeURIComponent(a.name)}'">
+    <div class="arc-card-overlay"></div>
+    <div class="arc-card-body">
+      <div class="arc-num">ARC ${a.num} · ${a.jp}</div>
+      <div class="arc-name">${a.name}</div>
+      <span class="arc-tag" style="background:${a.color}">${a.tag}</span>
+      <p class="arc-desc">${a.desc}</p>
+    </div>
+  </div>`;
+});
+
+/* ══════════════ BUILD DEVIL FRUITS ══════════════ */
+const fg=document.getElementById('fruitGrid');
+fruitData.forEach(f=>{
+  fg.innerHTML+=`
+  <div class="fruit-card rev" onclick="openFruitPop('${f.name.replace(/'/g,"\\'")}')">
+    <img class="fruit-img" src="${f.img}" alt="${f.name}" onerror="this.src='https://via.placeholder.com/180x130/0A1628/FFD700?text=${encodeURIComponent(f.name)}'">
+    <div class="fruit-body">
+      <div class="fruit-name">${f.name}</div>
+      <span class="fruit-type-badge ${f.type}">${f.typeLabel}</span>
+      <p class="fruit-user"><strong style="color:var(--gold)">User:</strong> ${f.user}</p>
+    </div>
+  </div>`;
+});
+
+/* ══════════════ WILL OF D ══════════════ */
+const dg=document.getElementById('dGrid');
+dData.forEach(d=>{
+  dg.innerHTML+=`<div class="d-card"><img class="d-card-img" src="${d.img}" alt="${d.name}" onerror="this.style.background='#1B2A4A'"><span class="d-card-name">${d.name}</span></div>`;
+});
+
+/* ══════════════ QUOTES SLIDER ══════════════ */
+let qi=0;
+function showQ(i){
+  const qt=document.getElementById('quoteText'),qa=document.getElementById('quoteAttr');
+  qt.style.opacity=0;qa.style.opacity=0;
+  setTimeout(()=>{qt.textContent=quotes[i].text;qa.textContent=quotes[i].attr;qt.style.transition='opacity .6s';qa.style.transition='opacity .6s ease .2s';qt.style.opacity=1;qa.style.opacity=1},300);
+  document.querySelectorAll('.q-dot').forEach((d,j)=>d.classList.toggle('active',j===i));
+}
+const qd=document.getElementById('qDots');
+quotes.forEach((_,i)=>{const b=document.createElement('button');b.className='q-dot'+(i===0?' active':'');b.onclick=()=>{qi=i;showQ(i)};qd.appendChild(b)});
+showQ(0);
+setInterval(()=>{qi=(qi+1)%quotes.length;showQ(qi)},6000);
+
+/* ══════════════ POPUPS ══════════════ */
+const popData={};
+crewData.forEach(c=>popData[c.id]=c);
+
+function openPop(id){
+  const c=popData[id];if(!c)return;
+  document.getElementById('popContent').innerHTML=`
+    <img class="popup-img" src="${c.img}" alt="${c.name}" onerror="this.style.display='none'">
+    <div class="popup-name">${c.name}</div>
+    <div class="popup-name" style="font-size:1rem;color:var(--smoke);font-family:'Noto Serif JP',serif;margin-bottom:.3rem">${c.jp}</div>
+    <div class="popup-role">${c.role}</div>
+    <p class="popup-text">${c.bio}</p>
+    <p class="popup-text">${c.detail}</p>
+    <p class="popup-text"><strong>Devil Fruit / Power:</strong> ${c.fruit}</p>
+    <p class="popup-text"><strong>Haki:</strong> ${c.haki}</p>
+    <p class="popup-text"><strong>Dream:</strong> ${c.dream}</p>
+    <div class="popup-bounty">฿${c.bounty} BERRIES</div>`;
+  document.getElementById('popOv').classList.add('on');
+  document.getElementById('popBox').classList.add('on');
+}
+
+function openFruitPop(name){
+  const f=fruitData.find(x=>x.name===name);if(!f)return;
+  document.getElementById('popContent').innerHTML=`
+    <img class="popup-img" src="${f.img}" alt="${f.name}" style="height:180px;object-fit:contain;background:rgba(10,22,40,.8)" onerror="this.style.display='none'">
+    <div class="popup-name">${f.name}</div>
+    <div class="popup-role">${f.typeLabel} Type</div>
+    <p class="popup-text"><strong>User(s):</strong> ${f.user}</p>
+    <p class="popup-text"><strong>Power:</strong> ${f.power}</p>`;
+  document.getElementById('popOv').classList.add('on');
+  document.getElementById('popBox').classList.add('on');
+}
+
+function closePop(){
+  document.getElementById('popOv').classList.remove('on');
+  document.getElementById('popBox').classList.remove('on');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePop()});
+
+/* ══════════════ PARALLAX HERO ══════════════ */
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  const ht=document.querySelector('.hero-title');
+  if(ht){ht.style.transform=`translateY(${y*.25}px)`;ht.style.opacity=1-y/600}
+});
+
+/* ══════════════ RE-OBSERVE after JS render ══════════════ */
+setTimeout(()=>{
+  document.querySelectorAll('.rev,.rev-l,.rev-r').forEach(el=>obs.observe(el));
+},100);
+</script>
+</body>
+</html>
